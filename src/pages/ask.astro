@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { StoriesListContainer } from '../components/StoriesListContainer';
+---
+
+<Layout title="Ask Stories - Hacker News">
+	<main>
+		<StoriesListContainer endpoint="askstories" client:load />
+	</main>
+</Layout>
+
+<style>
+</style>

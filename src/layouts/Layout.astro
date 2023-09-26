@@ -1,0 +1,39 @@
+---
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="Astro description" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+	</head>
+
+	<body class="container mx-auto mt-3 mb-10">
+		<header class="flex gap-x-3 bg-[#ff6600] px-2 py-1 leading-4">
+			<h1 class="font-bold"><a href="/">Hacker News</a></h1>
+			<ul class="flex gap-x-2">
+				<li class="pr-2 border-r border-black"><a href="/new">new</a></li>
+				<li class="pr-2 border-r border-black"><a href="/ask">ask</a></li>
+				<li class="pr-2 border-r border-black"><a href="/show">show</a></li>
+				<li><a href="/submit">submit</a></li>
+			</ul>
+
+			<a class="ml-auto" href="/login">login</a>
+		</header>
+
+		<slot />
+	</body>
+</html>
+
+<style is:global>
+	
+</style>
