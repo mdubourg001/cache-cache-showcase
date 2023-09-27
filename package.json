@@ -3,11 +3,13 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev --port 1234",
-    "start": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "build:watch": "chokidar \"src/**/*\" \"astro.config.ts\" -c \"pnpm build\"",
+    "serve": "node --watch server.js",
+    "dev": "pnpm build && concurrently --kill-others \"pnpm build:watch\" \"pnpm serve\"",
+    "clean": "rm -rf dist/ || true",
+    "build": "pnpm clean && astro build && pnpm junk",
+    "preview": "astro preview --port 1234",
+    "junk": "junk=$(node -e \"console.log(' '.repeat(50000))\");for i in dist/**/*.{html,css,js}; do echo \"$junk\" >> \"$i\"; done"
   },
   "dependencies": {
     "@astrojs/react": "^3.0.2",
@@ -18,5 +20,9 @@
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "tailwindcss": "^3.0.24"
+  },
+  "devDependencies": {
+    "chokidar-cli": "^3.0.0",
+    "concurrently": "^8.2.1"
   }
 }

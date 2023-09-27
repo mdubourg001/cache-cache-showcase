@@ -8,6 +8,7 @@ type Props = {
 };
 
 export function StoriesListContainer({ endpoint }: Props) {
+  const [isLoading, setIsLoading] = useState(true);
   const [stories, setStories] = useState<Story[]>([]);
 
   useEffect(function fetchStories() {
@@ -24,8 +25,15 @@ export function StoriesListContainer({ endpoint }: Props) {
           )
         );
       })
-      .then(setStories);
+      .then((stories) => {
+        setStories(stories);
+        setIsLoading(false);
+      });
   }, []);
+
+  if (isLoading) {
+    return <div className="bg-[#f6f6ef] py-2">Loading...</div>;
+  }
 
   return <StoriesList stories={stories} />;
 }
