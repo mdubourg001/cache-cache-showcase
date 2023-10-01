@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "build:watch": "chokidar \"src/**/*\" \"astro.config.ts\" -c \"pnpm build\"",
+    "build:watch": "chokidar \"src/**/*\" \"astro.config.ts\" \"public/**/*\" -c \"pnpm build\"",
     "serve": "node --watch server.js",
     "dev": "pnpm build && concurrently --kill-others \"pnpm build:watch\" \"pnpm serve\"",
     "clean": "rm -rf dist/ || true",
