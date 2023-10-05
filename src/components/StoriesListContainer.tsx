@@ -8,32 +8,28 @@ type Props = {
 };
 
 export function StoriesListContainer({ endpoint }: Props) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [stories, setStories] = useState<Story[]>([]);
+  const [stories, setStories] = useState<Story[]>(new Array(30).fill(null));
 
   useEffect(function fetchStories() {
     fetch(`https://hacker-news.firebaseio.com/v0/${endpoint}.json`)
       .then((response) => response.json())
       .then((storyIds: number[]) => {
-        const stories = storyIds.slice(0, 30);
+        for (let i = 0; i < 30; i++) {
+          fetch(
+            `https://hacker-news.firebaseio.com/v0/item/${storyIds[i]}.json`
+          ).then((response) =>
+            response.json().then((story) =>
+              setStories((actual) => {
+                const newStories = [...actual];
+                newStories[i] = story as Story;
 
-        return Promise.all(
-          stories.map((storyId: number) =>
-            fetch(
-              `https://hacker-news.firebaseio.com/v0/item/${storyId}.json`
-            ).then((response) => response.json())
-          )
-        );
-      })
-      .then((stories) => {
-        setStories(stories);
-        setIsLoading(false);
+                return newStories;
+              })
+            )
+          );
+        }
       });
   }, []);
-
-  if (isLoading) {
-    return <div className="bg-[#f6f6ef] py-2">Loading...</div>;
-  }
 
   return <StoriesList stories={stories} />;
 }

@@ -1,3 +1,4 @@
+const CACHE_NAME = "assets_v1";
 const ASSETS = [
   "favicon.svg",
   // HTML files
@@ -16,11 +17,12 @@ const ASSETS = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open("assets").then((cache) => {
+    caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS);
     })
   );
 
+  console.log("Installed service worker, skipping waiting...");
   self.skipWaiting();
 });
 
@@ -30,8 +32,23 @@ self.addEventListener("fetch", (event) => {
   }
 
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
+    caches.match(event.request).then((cachedResponse) => {
+      // stale-while-revalidate
+      const networkFetch = fetch(event.request)
+        .then((response) => {
+          const clonedResponse = response.clone();
+
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, clonedResponse);
+          });
+
+          return response;
+        })
+        .catch(function (reason) {
+          console.error(`Could not revalidate ${event.request.url}: `, reason);
+        });
+
+      return cachedResponse || networkFetch;
     })
   );
 });
