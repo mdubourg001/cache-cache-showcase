@@ -1,4 +1,5 @@
 import { useRef } from "react";
+
 import type { Story } from "../types";
 
 type Props = {
@@ -20,10 +21,13 @@ export function StoriesList({ stories }: Props) {
         <li key={story?.id ?? index} className="flex gap-x-3 py-px">
           <p className="text-slate-500 text-right w-5">{index + 1}.</p>
 
-          {story?.id ? (
+          {!!story ? (
             <div>
               <div className="flex items-center gap-x-1">
-                <a href={story.url ?? `/item?id=${story.id}`}>{story.title}</a>
+                <a href={story.url ?? `/item?id=${story.id}`}>
+                  {!story.by && "(DRAFT) "}
+                  {story.title}
+                </a>
                 {story.url && (
                   <p className="text-xs text-slate-500">
                     ({new URL(story.url).hostname})
@@ -31,10 +35,14 @@ export function StoriesList({ stories }: Props) {
                 )}
               </div>
               <div className="flex items-center gap-x-1 text-xs text-slate-500">
-                <p>{story.score} points</p>
-                <p>by {story.by}</p>
-                <p>{dtFormat.current.format(new Date(story.time))}</p>
-                <p>{story.descendants} comments</p>
+                <p>{story.score ?? 0} points</p>
+                <p>by {story.by ?? "you"}</p>
+                <p>
+                  {story.time
+                    ? dtFormat.current.format(new Date(story.time))
+                    : "- not yet published"}
+                </p>
+                {story.descendants ? <p>{story.descendants} comments</p> : null}
               </div>
             </div>
           ) : (

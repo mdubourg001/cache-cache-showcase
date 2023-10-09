@@ -22,7 +22,8 @@ const { title } = Astro.props;
       <h1 class="font-bold">
         <a href="/"
           >Hacker News <span class="bg-white text-[#7D7EF7] px-1">BDX I/O</span
-          ></a>
+          ></a
+        >
       </h1>
       <ul class="flex gap-x-2">
         <li class="pr-2 border-r border-black"><a href="/new">new</a></li>
@@ -30,9 +31,14 @@ const { title } = Astro.props;
         <li class="pr-2 border-r border-black"><a href="/show">show</a></li>
         <li><a href="/submit">submit</a></li>
       </ul>
-
-      <a class="ml-auto" href="/login">login</a>
     </header>
+    <div id="offline-warning" class="hidden px-4 py-2 bg-sky-100">
+      <p class="text-black font-bold">
+        🟧 Il semble y avoir eu un soucis lors de l'accès au réseau, les données
+        affichées sur cette page sont des données provenant de vos précédentes
+        navigations sur le site.
+      </p>
+    </div>
 
     <slot />
   </body>
@@ -41,7 +47,13 @@ const { title } = Astro.props;
 <script is:inline>
 if ("serviceWorker" in navigator) {
 	navigator.serviceWorker.register("/sw.js").then(() => {
-      console.log("Service Worker registered.");
-    });
-  }
+		console.log("Service Worker registered.");
+	});
+
+	navigator.serviceWorker.onmessage = (event) => {
+		if (event.data === "OFFLINE") {
+			document.getElementById("offline-warning").classList.remove("hidden");
+		}
+	};
+}
 </script>

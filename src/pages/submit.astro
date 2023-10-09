@@ -1,0 +1,14 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { StorySubmissionForm } from "../components/StorySubmissionForm";
+import { StoriesListContainer } from "../components/StoriesListContainer";
+---
+
+<Layout title="Show Stories - Hacker News">
+  <main class="flex flex-col bg-[#f6f6ef] p-2">
+    <StorySubmissionForm client:load />
+    <StoriesListContainer endpoint="submissions" placeholders={0} client:load />
+  </main>
+</Layout>
+
+<style></style>
