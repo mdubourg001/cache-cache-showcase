@@ -17,7 +17,7 @@ const server = http.createServer(async (req, res) => {
     if (NO_STORE.includes(url.pathname)) {
       res.setHeader("Cache-Control", "no-cache, no-store");
     } else {
-      res.setHeader("Cache-Control", "max-age=0, must-revalidate");
+      res.setHeader("Cache-Control", "no-cache");
       res.setHeader("Etag", etag);
     }
 
