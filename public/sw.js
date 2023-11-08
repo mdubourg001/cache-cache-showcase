@@ -29,6 +29,13 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
+async function postMessage(message) {
+  const clients = await self.clients.matchAll({ type: "window" });
+  for (const client of clients) {
+    client.postMessage(message);
+  }
+}
+
 function networkFirst(event) {
   return caches.match(event.request).then((cachedResponse) => {
     const networkResponse = fetch(event.request)
@@ -45,6 +52,8 @@ function networkFirst(event) {
         console.log(
           `Could not serve ${event.request.url} from network, serving from cache`
         );
+
+        postMessage("OFFLINE");
 
         return cachedResponse;
       });
@@ -67,6 +76,8 @@ function staleWhileRevalidate(event) {
       })
       .catch(function (reason) {
         console.error(`Could not revalidate ${event.request.url}: `, reason);
+
+        postMessage("OFFLINE");
       });
 
     return cachedResponse || networkFetch;

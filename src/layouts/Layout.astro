@@ -49,5 +49,11 @@ const { title } = Astro.props;
     navigator.serviceWorker.register("/sw.js").then(() => {
       console.log("Service Worker registered.");
     });
+
+    navigator.serviceWorker.onmessage = (event) => {
+      if (event.data === "OFFLINE") {
+        document.getElementById("offline-warning").classList.remove("hidden");
+      }
+    };
   }
 </script>
