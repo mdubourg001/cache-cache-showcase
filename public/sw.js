@@ -1,3 +1,5 @@
+importScripts("https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js");
+
 const CACHE_NAME = "assets_v1";
 const ASSETS = [
   "/favicon.svg",
@@ -84,11 +86,32 @@ function staleWhileRevalidate(event) {
   });
 }
 
+function storeSubmission(event) {
+  return event.request
+    .json()
+    .then((story) => {
+      return idbKeyval.update("submissions", (submissions) =>
+        submissions ? [...submissions, story] : [story]
+      );
+    })
+    .then(() => new Response(undefined, { status: 201 }));
+}
+
+function getSubmissions() {
+  return idbKeyval
+    .get("submissions")
+    .then((stories) => new Response(JSON.stringify(stories ?? [])));
+}
+
 self.addEventListener("fetch", (event) => {
   let response;
   const url = new URL(event.request.url);
 
-  if (url.origin.includes("hacker-news")) {
+  if (url.pathname === "/submit.json") {
+    response = storeSubmission(event);
+  } else if (url.pathname === "/submissions.json") {
+    response = getSubmissions();
+  } else if (url.origin.includes("hacker-news")) {
     response = networkFirst(event);
   } else if (ASSETS.includes(url.pathname)) {
     response = staleWhileRevalidate(event);
