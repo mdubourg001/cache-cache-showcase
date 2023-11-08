@@ -1,13 +1,13 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { StoriesListContainer } from '../components/StoriesListContainer';
+import Layout from "../layouts/Layout.astro";
+import { StoriesListContainer } from "../components/StoriesListContainer";
+import { HN_ENDPOINTS } from "../constants";
 ---
 
 <Layout title="Show Stories - Hacker News">
-	<main>
-		<StoriesListContainer endpoint="showstories" client:load />
-	</main>
+  <main>
+    <StoriesListContainer endpoint={HN_ENDPOINTS.showstories} client:load />
+  </main>
 </Layout>
 
-<style>
-</style>
+<style></style>

@@ -8,7 +8,7 @@ export function StorySubmissionForm() {
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
 
-    fetch(`https://hacker-news.firebaseio.com/v0/submit.json`, {
+    fetch(`/submit.json`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -24,7 +24,17 @@ export function StorySubmissionForm() {
   }, []);
 
   return (
-    <form className="flex flex-col gap-y-2" onSubmit={handleSubmit}>
+    <form
+      autoComplete="off"
+      className="flex flex-col gap-y-2"
+      onSubmit={handleSubmit}
+    >
+      <input
+        autoComplete="false"
+        name="hidden"
+        type="text"
+        className="hidden"
+      />
       <div className="flex items-center gap-x-2">
         <label htmlFor="title" className="w-10">
           title

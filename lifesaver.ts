@@ -2,21 +2,23 @@
 
 // ===================== Cache-Control basic =====================
 
-res.setHeader("Cache-Control", "max-age=10");
+res.setHeader("Cache-Control", "max-age=20");
 
-// ===================== Cache-Control SWR =====================
+// ===================== Cache-Control must-revalidate =====================
 
 const etag = md5(file);
 
 // res.setHeader("Cache-Control", "max-age=10");
-res.setHeader("Cache-Control", "no-cache");
+res.setHeader("Cache-Control", "max-age=0, must-revalidate");
 res.setHeader("Etag", etag);
 
 const ifNoneMatch = req.headers["if-none-match"];
 if (ifNoneMatch === etag) {
   res.statusCode = 304;
+  res.end();
 } else {
   res.statusCode = 200;
+  res.end(file);
 }
 
 // ===================== CacheStorage Setup (Cache Only) =====================
@@ -43,21 +45,22 @@ if ("serviceWorker" in navigator) {
 
 const CACHE_NAME = "assets_v1";
 const ASSETS = [
-  "favicon.svg",
+  "/favicon.svg",
   // HTML files
   "/",
-  "ask",
-  "new",
-  "show",
-  "submit",
+  "/ask",
+  "/new",
+  "/show",
+  "/submit",
+  "/item",
   // CSS files
-  "_astro/ask.css",
+  "/_astro/ask.css",
   // JS files
-  "_astro/client.js",
-  "_astro/index.js",
-  "_astro/jsx-runtime.js",
-  "_astro/StoriesListContainer.js",
-  "_astro/StorySubmissionForm.js",
+  "/_astro/client.js",
+  "/_astro/index.js",
+  "/_astro/jsx-runtime.js",
+  "/_astro/StoriesListContainer.js",
+  "/_astro/StorySubmissionForm.js",
 ];
 
 self.addEventListener("install", (event) => {
@@ -71,14 +74,14 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-function cacheFirst(event) {
+function cacheOnly(event) {
   return caches.match(event.request).then((cachedResponse) => {
     return cachedResponse || fetch(event.request);
   });
 }
 
 self.addEventListener("fetch", (event) => {
-  let response = cacheFirst(event);
+  let response = cacheOnly(event);
 
   event.respondWith(response);
 });
@@ -105,8 +108,41 @@ function staleWhileRevalidate(event) {
   });
 }
 
+function networkFirst(event) {
+  return caches.match(event.request).then((cachedResponse) => {
+    const networkResponse = fetch(event.request)
+      .then((response) => {
+        const cloned = response.clone();
+
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, cloned);
+        });
+
+        return response;
+      })
+      .catch(() => {
+        console.log(
+          `Could not serve ${event.request.url} from network, serving from cache`
+        );
+
+        return cachedResponse;
+      });
+
+    return networkResponse || cachedResponse;
+  });
+}
+
 self.addEventListener("fetch", (event) => {
-  let response = staleWhileRevalidate(event);
+  let response;
+  const url = new URL(event.request.url);
+
+  if (url.origin.includes("hacker-news")) {
+    response = networkFirst(event);
+  } else if (ASSETS.includes(url.pathname)) {
+    response = staleWhileRevalidate(event);
+  } else {
+    return;
+  }
 
   event.respondWith(response);
 });
@@ -156,17 +192,15 @@ function getSubmissions() {
 }
 
 self.addEventListener("fetch", (event) => {
-  let response;
   const url = new URL(event.request.url);
+  let response;
 
-  if (url.origin === "https://hacker-news.firebaseio.com") {
-    if (url.pathname.endsWith("submit.json")) {
-      response = storeSubmission(event);
-    } else if (url.pathname.endsWith("submissions.json")) {
-      response = getSubmissions();
-    } else {
-      response = staleWhileRevalidate(event);
-    }
+  if (url.pathname === "/submit.json") {
+    response = storeSubmission(event);
+  } else if (url.pathname === "/submissions.json") {
+    response = getSubmissions();
+  } else if (url.origin.includes("hacker-news")) {
+    response = networkFirst(event);
   } else {
     response = staleWhileRevalidate(event);
   }

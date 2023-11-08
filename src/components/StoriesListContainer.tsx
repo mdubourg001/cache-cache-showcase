@@ -2,14 +2,10 @@ import { useEffect, useState } from "react";
 
 import { StoriesList } from "./StoriesList";
 import type { Story } from "../types";
+import type { HN_ENDPOINTS } from "../constants";
 
 type Props = {
-  endpoint:
-    | "topstories"
-    | "newstories"
-    | "askstories"
-    | "showstories"
-    | "submissions";
+  endpoint: (typeof HN_ENDPOINTS)[keyof typeof HN_ENDPOINTS];
   placeholders?: number;
 };
 
@@ -19,14 +15,14 @@ export function StoriesListContainer({ endpoint, placeholders = 30 }: Props) {
   );
 
   useEffect(function fetchStories() {
-    fetch(`https://hacker-news.firebaseio.com/v0/${endpoint}.json`)
+    fetch(endpoint)
       .then((response) => response.json())
       .then((storyIds: number[]) => {
         if (!storyIds) {
           return;
         }
 
-        if (endpoint === "submissions") {
+        if (endpoint === "/submissions.json") {
           return setStories((storyIds ?? []) as any[]);
         }
 

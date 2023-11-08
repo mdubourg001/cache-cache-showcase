@@ -22,14 +22,17 @@ export function StoriesList({ stories }: Props) {
           <p className="text-slate-500 text-right w-5">{index + 1}.</p>
 
           {!!story ? (
-            <div>
+            <div className="overflow-x-hidden">
               <div className="flex items-center gap-x-1">
-                <a href={story.url ?? `/item?id=${story.id}`}>
+                <a
+                  className="whitespace-nowrap"
+                  href={story.url ?? `/item?id=${story.id}`}
+                >
                   {!story.by && "(DRAFT) "}
                   {story.title}
                 </a>
                 {story.url && (
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 whitespace-nowrap">
                     ({new URL(story.url).hostname})
                   </p>
                 )}
