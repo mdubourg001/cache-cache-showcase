@@ -11,9 +11,18 @@ const server = http.createServer(async (req, res) => {
 
     res.setHeader("Content-Type", contentType);
 
-    res.setHeader("Cache-Control", "max-age=20");
+    const etag = md5(file);
+    res.setHeader("Cache-Control", "max-age=0, must-revalidate");
+    res.setHeader("Etag", etag);
 
-    res.end(file);
+    const ifNoneMatch = req.headers["if-none-match"];
+    if (ifNoneMatch === etag) {
+      res.statusCode = 304;
+      res.end();
+    } else {
+      res.statusCode = 200;
+      res.end(file);
+    }
   } catch (error) {
     res.writeHead(error.message);
     res.end();
