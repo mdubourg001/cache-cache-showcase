@@ -17,3 +17,26 @@ const ASSETS = [
   "/_astro/StoriesListContainer.js",
   "/_astro/StorySubmissionForm.js",
 ];
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS);
+    })
+  );
+
+  console.log("Installed service worker, skipping waiting...");
+  self.skipWaiting();
+});
+
+function cacheOnly(event) {
+  return caches.match(event.request).then((cachedResponse) => {
+    return cachedResponse || fetch(event.request);
+  });
+}
+
+self.addEventListener("fetch", (event) => {
+  let response = cacheOnly(event);
+
+  event.respondWith(response);
+});
