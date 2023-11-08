@@ -29,14 +29,61 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-function cacheOnly(event) {
+function networkFirst(event) {
   return caches.match(event.request).then((cachedResponse) => {
-    return cachedResponse || fetch(event.request);
+    const networkResponse = fetch(event.request)
+      .then((response) => {
+        const cloned = response.clone();
+
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, cloned);
+        });
+
+        return response;
+      })
+      .catch(() => {
+        console.log(
+          `Could not serve ${event.request.url} from network, serving from cache`
+        );
+
+        return cachedResponse;
+      });
+
+    return networkResponse || cachedResponse;
+  });
+}
+
+function staleWhileRevalidate(event) {
+  return caches.match(event.request).then((cachedResponse) => {
+    const networkFetch = fetch(event.request)
+      .then((response) => {
+        const clonedResponse = response.clone();
+
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, clonedResponse);
+        });
+
+        return response;
+      })
+      .catch(function (reason) {
+        console.error(`Could not revalidate ${event.request.url}: `, reason);
+      });
+
+    return cachedResponse || networkFetch;
   });
 }
 
 self.addEventListener("fetch", (event) => {
-  let response = cacheOnly(event);
+  let response;
+  const url = new URL(event.request.url);
+
+  if (url.origin.includes("hacker-news")) {
+    response = networkFirst(event);
+  } else if (ASSETS.includes(url.pathname)) {
+    response = staleWhileRevalidate(event);
+  } else {
+    return;
+  }
 
   event.respondWith(response);
 });
