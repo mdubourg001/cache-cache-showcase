@@ -11,6 +11,8 @@ const server = http.createServer(async (req, res) => {
 
     res.setHeader("Content-Type", contentType);
 
+    res.setHeader("Cache-Control", "max-age=20");
+
     res.end(file);
   } catch (error) {
     res.writeHead(error.message);
